@@ -5,11 +5,20 @@
  */
 package com.mycompany.twitterpostforcoucou;
 
+import com.amandine.twitterpostforcoucou.Tweet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.EntityManager;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
+import com.amandine.model.*;
+import java.util.concurrent.ThreadLocalRandom;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
+import javax.persistence.RollbackException;
 
 /**
  *
@@ -20,13 +29,13 @@ public class TweetTest {
     String[] adjectives
             = {"#accurate", "#adorn", "#apparel", "#chic", "#colour",
                 "#comfortable", "#contemporary",
-                "#cosy", "#cotton", "#wool","#alpaca", "#silk", "#pleats","#folds","#drape", "#dance", "#easy", "#elegant",
-                "#everyday", "#fabric", "#flow","#french","#japanese",
+                "#cosy", "#cotton", "#wool", "#alpaca", "#silk", "#pleats", "#folds", "#drape", "#dance", "#easy", "#elegant",
+                "#everyday", "#fabric", "#flow", "#french", "#japanese",
                 "#freedom", "#hug", "#intemporal", "#intimate", "#italian",
                 "#knitwear", "#life", "#loose", "#oversized", "#squarecut", "#minimalist", "#morphology", "#move",
                 "#pursue", "#soft", "#sophisticated", "#winter", "#subdued",
                 "#autumn", "#sweaters", "#sweats", "#sweet", "#timeless",
-                "#wear", "#woman", "#2015","#freeshipping"};
+                "#wear", "#woman", "#2015", "#freeshipping"};
 
     String[] usernames = //{"@janitha_j","@amandinelefRTW"};  
             {"@10Ronaldinho", "@ActuallyNPH", "@agnezmo", "@AlejandroSanz", "@aliciakeys", "@aplusk", "@ArianaGrande", "@ashleytisdale", "@AvrilLavigne", "@BarackObama", "@BeingSalmanKhan", "@Beyonce", "@BillGates", "@blakeshelton", "@britneyspears", "@BrunoMars", "@charliesheen", "@chrisbrown",
@@ -72,21 +81,19 @@ public class TweetTest {
                 "@vidialdiano", "@WhiteHouse", "@WWE", "@yokoono", "@WholeFoods", "@virendersehwag", "@WhennBoys", "@YUVSTRONG12", "@VeraBrezhneva", "@XabiAlonso", "@WSJ", "@Xbox", "@YouTubeTrends", "@wyclef", "@yilmazerdogan", "@WomensHealthMag", "@zoetheband", "@wilw", "@ZacEfron", "@ZooeyDeschanel", "@Zendaya", "@yuyacst", "@YordiRosado", "@", "@ZozeeBo", "@ZonaTown", "@youm7"
             };
 
-    String imageUrls[] = {        
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/adana.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/ara.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/capella.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/dravoauriga.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/homan.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/lybra.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/nialstrerope.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/orionini.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/spikawezen.jpg",
-"http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/yildun.jpg",
-     };
+    String imageUrls[] = {
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/adana.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/ara.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/capella.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/dravoauriga.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/homan.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/lybra.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/nialstrerope.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/orionini.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/spikawezen.jpg",
+        "http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/yildun.jpg",};
     private String[] targetUrls = {//"https://youtu.be/sVNvJ-j-4Z4", 
-        "http://shop.amandineleforestier.fr", 
-        //"https://youtu.be/1XNQ_dswQBo", "https://youtu.be/sL7tpK5GZsE", "https://youtu.be/7ELJVS8cbTc", "https://youtu.be/WzTCcbEJb04","https://youtu.be/lQJ_8NnhTO8"
+        "http://shop.amandineleforestier.fr", //"https://youtu.be/1XNQ_dswQBo", "https://youtu.be/sL7tpK5GZsE", "https://youtu.be/7ELJVS8cbTc", "https://youtu.be/WzTCcbEJb04","https://youtu.be/lQJ_8NnhTO8"
     };
 
     /**
@@ -96,13 +103,14 @@ public class TweetTest {
     public void testMain() {
         System.out.println("main");
         String[] args = null;
-        Tweet.main(args);
+        //Tweet.main(args);
         assertEquals(1, 1);
         // TODO review the generated test code and remove the default call to fail.
         //fail("The test case is a prototype.");
     }
 
     @Test
+    @Ignore
     public void tweettoUsers() {
         //http://twittercounter.com/pages/100
         Tweet t = new Tweet();
@@ -124,7 +132,7 @@ public class TweetTest {
     @Test
     public void getFollowersTest() {
         Tweet t = new Tweet();
-        t.getFollowers("@janitha_j", t.getTwitter());
+        t.getFollowers("@Android");
         assertEquals(t, t);
     }
 
@@ -140,6 +148,7 @@ public class TweetTest {
     }
 
     @Test
+    @Ignore
     public void tweetUserWithHashTagsandImages() {
         assertTrue(true);
         Tweet t = new Tweet();
@@ -152,19 +161,126 @@ public class TweetTest {
         //List<String> rimageUrls = randomizedImageUrls.getElementsInRadomOrder(imageUrls.length);
         //t.tweetMessageToUser("@janitha_j", "#cosy #chic #sporty", "http://www.amandineleforestier.fr/images/slider/amandine-leforestier-accueil-2.jpg");
         //do {
-            rusernames = randomizedUsernames.getElementsInRadomOrder(usernames.length);
-            for (String u : rusernames) {
-                radjectives = randomizedAdjectives.getElementsInRadomOrder(3);
-                t.tweetMessageToUser(u, radjectives.get(0) + " " + radjectives.get(1) + " " + radjectives.get(2), randomizedImageUrls.getElementsInRadomOrder(1).get(0), randomizedTargetUrls.getElementsInRadomOrder(1).get(0));
-                try {
-                    Thread.sleep(1000 * 61);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(TweetTest.class
-                            .getName()).log(Level.SEVERE, null, ex);
-                }
+        rusernames = randomizedUsernames.getElementsInRadomOrder(usernames.length);
+        for (String u : rusernames) {
+            radjectives = randomizedAdjectives.getElementsInRadomOrder(3);
+            t.tweetMessageToUser(u, radjectives.get(0) + " " + radjectives.get(1) + " " + radjectives.get(2), randomizedImageUrls.getElementsInRadomOrder(1).get(0), randomizedTargetUrls.getElementsInRadomOrder(1).get(0));
+            try {
+                Thread.sleep(1000 * 61);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(TweetTest.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
-            
+        }
+
         //} while (true);
     }
 
+    @Test
+    public void getFollowerIdsTest() {
+        Tweet t = new Tweet();
+        t.getFollowersInformation("@janitha_j");
+        //assertEquals(t, t);
+    }
+
+    @Test
+    public void getUsers() {
+        //http://www.javaguicodexample.com/javawejsfjpamysqlbdatabase12ver2.html
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        Users[] users = null;
+        try {
+            javax.persistence.Query q = emf.createEntityManager().createQuery("select c from Users as c");
+            users = (Users[]) q.getResultList().toArray(new Users[0]);
+        } finally {
+            emf.createEntityManager().close();
+        }
+        assertEquals("112122", users[0].getTwitterid());
+        assertEquals("@screenname", users[0].getScreenname());
+    }
+
+    @Test
+    public void writeATwitterIDToTheTable() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        EntityManager em = emf.createEntityManager();
+        try {
+            EntityTransaction entr = em.getTransaction();
+            entr.begin();
+            Users emp = new Users();
+            emp.setTwitterid("112122");
+            emp.setScreenname("@" + "screenname");
+            em.persist(emp);
+            entr.commit();
+        } catch (RollbackException e) {
+            Logger.getLogger(TweetTest.class
+                    .getName()).log(Level.INFO, "Primary key violation", e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    @Test
+    public void writeToTableTest() {
+        Tweet t = new Tweet();
+        t.writeToTable("1", "@screenname", "@fromscreenname");
+    }
+
+    @Test
+    public void getKeywordById() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        Keywords[] adj = null;
+        try {
+            javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Keywords.findById").setParameter("id", 1);
+            adj = (Keywords[]) q.getResultList().toArray(new Keywords[0]);
+        } finally {
+            emf.createEntityManager().close();
+        }
+        assertEquals(1, adj[0].getKeywordsPK().getId());
+        assertEquals("#2015", adj[0].getKeywordsPK().getKeyword());
+    }
+
+    @Test
+    public void getKeywordByRandomId() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        Keywords[] adj = null;
+        int count = 0;
+        try {
+            count = ((Number) emf.createEntityManager().createNamedQuery("Keywords.rowCount").getSingleResult()).intValue();
+            int randomId = ThreadLocalRandom.current().nextInt(1, count + 1);
+            javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Keywords.findById").setParameter("id", randomId);
+            adj = (Keywords[]) q.getResultList().toArray(new Keywords[0]);
+        } finally {
+            emf.createEntityManager().close();
+        }
+        assertEquals(50, count);
+        assertEquals(1, adj[0].getKeywordsPK().getId());
+        assertEquals("#2015", adj[0].getKeywordsPK().getKeyword());
+    }
+
+    @Test
+    public void getImageUrlById() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        Imageurls[] adj = null;
+        try {
+            javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Imageurls.findById").setParameter("id", 1);
+            adj = (Imageurls[]) q.getResultList().toArray(new Imageurls[0]);
+        } finally {
+            emf.createEntityManager().close();
+        }
+        assertEquals(1, adj[0].getImageurlsPK().getId());
+        assertEquals("http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/adana.jpg", adj[0].getImageurlsPK().getUrl());
+    }
+
+    @Test
+    public void getTargetUrlById() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        Targeturls[] adj = null;
+        try {
+            javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Targeturls.findById").setParameter("id", 1);
+            adj = (Targeturls[]) q.getResultList().toArray(new Targeturls[0]);
+        } finally {
+            emf.createEntityManager().close();
+        }
+        assertEquals(1, adj[0].getTargeturlsPK().getId());
+        assertEquals("http://shop.amandineleforestier.fr", adj[0].getTargeturlsPK().getUrl());
+    }
 }
