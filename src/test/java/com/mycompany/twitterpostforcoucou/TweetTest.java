@@ -187,14 +187,9 @@ public class TweetTest {
     public void getUsers() {
         //http://www.javaguicodexample.com/javawejsfjpamysqlbdatabase12ver2.html
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
-        Users[] users = null;
-        try {
-            javax.persistence.Query q = emf.createEntityManager().createQuery("select c from Users as c");
-            users = (Users[]) q.getResultList().toArray(new Users[0]);
-        } finally {
-            emf.createEntityManager().close();
-        }
-        assertEquals("112122", users[0].getTwitterid());
+        Tweet t = new Tweet();
+        Users[] users = t.getRandomUser();
+        assertEquals("112122", users[0].getUsersPK().getTwitterid());
         assertEquals("@screenname", users[0].getScreenname());
     }
 
@@ -206,7 +201,7 @@ public class TweetTest {
             EntityTransaction entr = em.getTransaction();
             entr.begin();
             Users emp = new Users();
-            emp.setTwitterid("112122");
+            emp.getUsersPK().setTwitterid("112122");
             emp.setScreenname("@" + "screenname");
             em.persist(emp);
             entr.commit();
@@ -240,47 +235,43 @@ public class TweetTest {
 
     @Test
     public void getKeywordByRandomId() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
-        Keywords[] adj = null;
-        int count = 0;
-        try {
-            count = ((Number) emf.createEntityManager().createNamedQuery("Keywords.rowCount").getSingleResult()).intValue();
-            int randomId = ThreadLocalRandom.current().nextInt(1, count + 1);
-            javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Keywords.findById").setParameter("id", randomId);
-            adj = (Keywords[]) q.getResultList().toArray(new Keywords[0]);
-        } finally {
-            emf.createEntityManager().close();
-        }
-        assertEquals(50, count);
+        Tweet t = new Tweet();
+        Keywords[] adj = t.getRandomKeyword();
         assertEquals(1, adj[0].getKeywordsPK().getId());
         assertEquals("#2015", adj[0].getKeywordsPK().getKeyword());
     }
 
+
+
     @Test
     public void getImageUrlById() {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
-        Imageurls[] adj = null;
-        try {
-            javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Imageurls.findById").setParameter("id", 1);
-            adj = (Imageurls[]) q.getResultList().toArray(new Imageurls[0]);
-        } finally {
-            emf.createEntityManager().close();
-        }
+        Tweet t = new Tweet();
+        Imageurls[] adj = t.getRandomImageUrl();
         assertEquals(1, adj[0].getImageurlsPK().getId());
         assertEquals("http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/adana.jpg", adj[0].getImageurlsPK().getUrl());
     }
 
+
     @Test
     public void getTargetUrlById() {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
-        Targeturls[] adj = null;
-        try {
-            javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Targeturls.findById").setParameter("id", 1);
-            adj = (Targeturls[]) q.getResultList().toArray(new Targeturls[0]);
-        } finally {
-            emf.createEntityManager().close();
-        }
+        Tweet t = new Tweet();
+        Targeturls[] adj = t.getRandomTargetUrl();
         assertEquals(1, adj[0].getTargeturlsPK().getId());
         assertEquals("http://shop.amandineleforestier.fr", adj[0].getTargeturlsPK().getUrl());
     }
+
+    @Test
+    public void contructATweet(){
+        Tweet t = new Tweet();
+        System.out.println(
+                t.getRandomUser()[0].getScreenname()+ " " +
+                t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " " + 
+                t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " " + 
+                t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " " + 
+                t.getRandomImageUrl()[0].getImageurlsPK().getUrl() + " " +
+                t.getRandomTargetUrl()[0].getTargeturlsPK().getUrl());
+    }
+    
 }

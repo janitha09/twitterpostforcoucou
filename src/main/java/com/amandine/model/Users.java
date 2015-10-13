@@ -6,10 +6,9 @@
 package com.amandine.model;
 
 import java.io.Serializable;
-import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -23,15 +22,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "users", catalog = "twitterforcoucou", schema = "")
 @XmlRootElement
 @NamedQueries({
+    @NamedQuery(name = "Users.rowCount", query = "SELECT COUNT(u) FROM Users u"),
     @NamedQuery(name = "Users.findAll", query = "SELECT u FROM Users u"),
-    @NamedQuery(name = "Users.findByTwitterid", query = "SELECT u FROM Users u WHERE u.twitterid = :twitterid"),
-    @NamedQuery(name = "Users.findByScreenname", query = "SELECT u FROM Users u WHERE u.screenname = :screenname")})
+    @NamedQuery(name = "Users.findById", query = "SELECT u FROM Users u WHERE u.usersPK.id = :id"),
+    @NamedQuery(name = "Users.findByTwitterid", query = "SELECT u FROM Users u WHERE u.usersPK.twitterid = :twitterid"),
+    @NamedQuery(name = "Users.findByScreenname", query = "SELECT u FROM Users u WHERE u.screenname = :screenname"),
+    @NamedQuery(name = "Users.findByFromscreenname", query = "SELECT u FROM Users u WHERE u.fromscreenname = :fromscreenname")})
 public class Users implements Serializable {
     private static final long serialVersionUID = 1L;
-    @Id
-    @Basic(optional = false)
-    @Column(name = "twitterid")
-    private String twitterid;
+    @EmbeddedId
+    protected UsersPK usersPK;
     @Column(name = "screenname")
     private String screenname;
     @Column(name = "fromscreenname")
@@ -40,16 +40,20 @@ public class Users implements Serializable {
     public Users() {
     }
 
-    public Users(String twitterid) {
-        this.twitterid = twitterid;
+    public Users(UsersPK usersPK) {
+        this.usersPK = usersPK;
     }
 
-    public String getTwitterid() {
-        return twitterid;
+    public Users(int id, String twitterid) {
+        this.usersPK = new UsersPK(id, twitterid);
     }
 
-    public void setTwitterid(String twitterid) {
-        this.twitterid = twitterid;
+    public UsersPK getUsersPK() {
+        return usersPK;
+    }
+
+    public void setUsersPK(UsersPK usersPK) {
+        this.usersPK = usersPK;
     }
 
     public String getScreenname() {
@@ -59,18 +63,19 @@ public class Users implements Serializable {
     public void setScreenname(String screenname) {
         this.screenname = screenname;
     }
-        public String getFromScreenname() {
+
+    public String getFromscreenname() {
         return fromscreenname;
     }
 
-    public void setFromScreenname(String screenname) {
-        this.fromscreenname = screenname;
+    public void setFromscreenname(String fromscreenname) {
+        this.fromscreenname = fromscreenname;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (twitterid != null ? twitterid.hashCode() : 0);
+        hash += (usersPK != null ? usersPK.hashCode() : 0);
         return hash;
     }
 
@@ -81,7 +86,7 @@ public class Users implements Serializable {
             return false;
         }
         Users other = (Users) object;
-        if ((this.twitterid == null && other.twitterid != null) || (this.twitterid != null && !this.twitterid.equals(other.twitterid))) {
+        if ((this.usersPK == null && other.usersPK != null) || (this.usersPK != null && !this.usersPK.equals(other.usersPK))) {
             return false;
         }
         return true;
@@ -89,7 +94,7 @@ public class Users implements Serializable {
 
     @Override
     public String toString() {
-        return "com.amandine.model.Users[ twitterid=" + twitterid + " ]";
+        return "com.amandine.model.Users[ usersPK=" + usersPK + " ]";
     }
     
 }

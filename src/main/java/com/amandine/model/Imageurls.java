@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "imageurls", catalog = "twitterforcoucou", schema = "")
 @XmlRootElement
 @NamedQueries({
+    @NamedQuery(name = "Imageurls.rowCount", query = "SELECT COUNT(i) FROM Imageurls i"),
     @NamedQuery(name = "Imageurls.findAll", query = "SELECT i FROM Imageurls i"),
     @NamedQuery(name = "Imageurls.findById", query = "SELECT i FROM Imageurls i WHERE i.imageurlsPK.id = :id"),
     @NamedQuery(name = "Imageurls.findByUrl", query = "SELECT i FROM Imageurls i WHERE i.imageurlsPK.url = :url")})
