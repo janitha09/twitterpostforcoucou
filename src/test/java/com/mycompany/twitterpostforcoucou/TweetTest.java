@@ -241,8 +241,6 @@ public class TweetTest {
         assertEquals("#2015", adj[0].getKeywordsPK().getKeyword());
     }
 
-
-
     @Test
     public void getImageUrlById() {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
@@ -252,10 +250,9 @@ public class TweetTest {
         assertEquals("http://www.amandineleforestier.fr/images/automn%20winter%202015/collection/adana.jpg", adj[0].getImageurlsPK().getUrl());
     }
 
-
     @Test
     public void getTargetUrlById() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+
         Tweet t = new Tweet();
         Targeturls[] adj = t.getRandomTargetUrl();
         assertEquals(1, adj[0].getTargeturlsPK().getId());
@@ -263,15 +260,40 @@ public class TweetTest {
     }
 
     @Test
-    public void contructATweet(){
+    public void contructATweet() {
         Tweet t = new Tweet();
         System.out.println(
-                t.getRandomUser()[0].getScreenname()+ " " +
-                t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " " + 
-                t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " " + 
-                t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " " + 
-                t.getRandomImageUrl()[0].getImageurlsPK().getUrl() + " " +
-                t.getRandomTargetUrl()[0].getTargeturlsPK().getUrl());
+                t.getRandomUser()[0].getScreenname() + " "
+                + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
+                + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
+                + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
+                + t.getRandomImageUrl()[0].getImageurlsPK().getUrl() + " "
+                + t.getRandomTargetUrl()[0].getTargeturlsPK().getUrl());
     }
-    
+
+    @Test
+    public void writetoStatusUpdateTable() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        EntityManager em = emf.createEntityManager();
+        Tweet t = new Tweet();
+        try {
+            EntityTransaction entr = em.getTransaction();
+            entr.begin();
+            Statusupdatelog stat = new Statusupdatelog(0, "11211");
+            stat.getStatusupdatelogPK().getTwitterid();//("11211");
+            stat.setStatusupdate("@" +
+                    t.getRandomUser()[0].getScreenname() + " "
+                    + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
+                    + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
+                    + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
+                    + t.getRandomImageUrl()[0].getImageurlsPK().getUrl() + " "
+                    + t.getRandomTargetUrl()[0].getTargeturlsPK().getUrl());
+            em.persist(stat);
+            entr.commit();
+            } catch (RollbackException e) {
+            //logger.log(Level.INFO, "Primary key violation", e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
 }

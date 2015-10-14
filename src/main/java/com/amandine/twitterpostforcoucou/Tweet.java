@@ -226,7 +226,7 @@ public class Tweet {
                 for (long id : ids.getIDs()) {
                     System.out.println(id + " " + twitter.showUser(id).getScreenName());
                     //twitter.showUser(id).getDescription language location name
-                    writeToTable(Long.toString(id), twitter.showUser(id).getScreenName(), FollowersFor);
+                    writeToTable(Long.toString(id), twitter.showUser(id).getScreenName(),FollowersFor);
                 }
             } while ((cursor = ids.getNextCursor()) != 0);
             System.exit(0);
@@ -242,14 +242,14 @@ public class Tweet {
         try {
             EntityTransaction entr = em.getTransaction();
             entr.begin();
-            Users usr = new Users();
-            usr.getUsersPK().setTwitterid(twitterId);
+            Users usr = new Users(0,twitterId);
+            //usr.setTwitterid(twitterId);
             usr.setScreenname(twitterScreenName);
             usr.setFromscreenname(from);
             em.persist(usr);
             entr.commit();
-        } catch (RollbackException e) {
-            logger.log(Level.INFO, "Primary key violation", e.getMessage());
+//        } catch (RollbackException e) {
+//            logger.log(Level.INFO, "Primary key violation", e.getMessage());
         } finally {
             em.close();
         }
