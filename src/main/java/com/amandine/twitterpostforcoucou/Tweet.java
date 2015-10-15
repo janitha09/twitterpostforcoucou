@@ -224,10 +224,16 @@ public class Tweet {
 //                     ids = twitter.getFollowersIDs(cursor); 
 //                 } 
                 for (long id : ids.getIDs()) {
-                    System.out.println(id + " " + twitter.showUser(id).getScreenName());
+                    //System.out.println(id + " " + twitter.showUser(id).getScreenName());
                     //twitter.showUser(id).getDescription language location name
-                    writeToTable(Long.toString(id), twitter.showUser(id).getScreenName(),FollowersFor);
+                    //twitter.showUser(id).getScreenName() this is rate limited at 180 every 15 minutes
+                    writeToTable(Long.toString(id), "",FollowersFor);
                 }
+                    try {
+                        Thread.sleep(1000 * 60);
+                    } catch (InterruptedException ex) {
+                        logger.log(Level.INFO, "Woke up", ex);
+                    }
             } while ((cursor = ids.getNextCursor()) != 0);
             System.exit(0);
         } catch (TwitterException te) {
@@ -242,14 +248,14 @@ public class Tweet {
         try {
             EntityTransaction entr = em.getTransaction();
             entr.begin();
-            Users usr = new Users(0,twitterId);
+            Users usr = new Users(0, twitterId);
             //usr.setTwitterid(twitterId);
             usr.setScreenname(twitterScreenName);
             usr.setFromscreenname(from);
             em.persist(usr);
             entr.commit();
-//        } catch (RollbackException e) {
-//            logger.log(Level.INFO, "Primary key violation", e.getMessage());
+        } catch (RollbackException e) {
+            logger.log(Level.INFO, "Primary key violation", e.getMessage());
         } finally {
             em.close();
         }

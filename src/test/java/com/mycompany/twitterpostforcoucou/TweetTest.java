@@ -18,7 +18,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.Query;
 import javax.persistence.RollbackException;
+import org.eclipse.persistence.config.QueryHints;
+import org.eclipse.persistence.queries.ScrollableCursor;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
 
 /**
  *
@@ -179,7 +185,7 @@ public class TweetTest {
     @Test
     public void getFollowerIdsTest() {
         Tweet t = new Tweet();
-        t.getFollowersInformation("@janitha_j");
+        t.getFollowersInformation("@jimcramer");
         //assertEquals(t, t);
     }
 
@@ -281,8 +287,8 @@ public class TweetTest {
             entr.begin();
             Statusupdatelog stat = new Statusupdatelog(0, "11211");
             stat.getStatusupdatelogPK().getTwitterid();//("11211");
-            stat.setStatusupdate("@" +
-                    t.getRandomUser()[0].getScreenname() + " "
+            stat.setStatusupdate("@"
+                    + t.getRandomUser()[0].getScreenname() + " "
                     + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
                     + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
                     + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
@@ -290,10 +296,70 @@ public class TweetTest {
                     + t.getRandomTargetUrl()[0].getTargeturlsPK().getUrl());
             em.persist(stat);
             entr.commit();
-            } catch (RollbackException e) {
+        } catch (RollbackException e) {
             //logger.log(Level.INFO, "Primary key violation", e.getMessage());
         } finally {
             em.close();
         }
+    }
+
+    @Test
+    public void iterateATable() {
+        //http://stackoverflow.com/questions/5067619/jpa-what-is-the-proper-pattern-for-iterating-over-large-result-sets
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        EntityManager em = emf.createEntityManager();
+//        Query q = em.createQuery("UPDATE Subscription s SET s.paid = :paid WHERE s.subscriptionDate < :today");
+        //count = ((Number) emf.createEntityManager().createNamedQuery("Keywords.rowCount").getSingleResult()).intValue();
+        //em.getTransaction().begin();
+        Query query = em.createQuery("UPDATE Users u SET u.screenname = :screenname WHERE u.usersPK.id = :aid");
+        query.setParameter("aid", 1);
+        query.setParameter("screenname", "@screenname2");
+            EntityTransaction entr = em.getTransaction();
+            entr.begin();
+            int updated = query.executeUpdate();
+            entr.commit();
+
+        //em.getTransaction().commit();
+//query.setHint(QueryHints.CURSOR, true).setHint(QueryHints.SCROLLABLE_CURSOR, true);
+        //ScrollableCursor scrl = (ScrollableCursor) query.getSingleResult();
+//        Object o = null;
+//        while ((o = scrl.next()) != null) {
+//            System.out.println(((Users)o).getUsersPK());
+//        }
+    }
+    @Test
+    public void updatearowbyIndex(){
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        EntityManager em = emf.createEntityManager();
+        Users u = em.find(Users.class,new UsersPK(1,"537288506"));
+        em.getTransaction().begin();
+        u.setScreenname("@screenname");
+        em.getTransaction().commit();
+        
+    }
+    @Test
+    public void updateaUserWithItsScreenName(){
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        EntityManager em = emf.createEntityManager();
+//        Query q = em.createQuery("UPDATE Subscription s SET s.paid = :paid WHERE s.subscriptionDate < :today");
+        //count = ((Number) emf.createEntityManager().createNamedQuery("Keywords.rowCount").getSingleResult()).intValue();
+        //em.getTransaction().begin();
+        javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Users.findById").setParameter("id", 2);
+            Users[] usr = (Users[]) q.getResultList().toArray(new Users[0]);
+            String twId = usr[0].getUsersPK().getTwitterid();
+            Twitter twitter = new TwitterFactory().getInstance();
+            String screenname = null;
+            try{
+                screenname = twitter.showUser(new Long(twId)).getScreenName();
+            }catch(TwitterException tw){
+                
+            }
+        Query query = em.createQuery("UPDATE Users u SET u.screenname = :screenname WHERE u.usersPK.id = :aid");
+        query.setParameter("aid", 2);
+        query.setParameter("screenname", screenname);
+            EntityTransaction entr = em.getTransaction();
+            entr.begin();
+            int updated = query.executeUpdate();
+            entr.commit();
     }
 }
