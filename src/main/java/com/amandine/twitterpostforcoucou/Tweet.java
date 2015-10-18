@@ -11,6 +11,7 @@ package com.amandine.twitterpostforcoucou;
  */
 import com.amandine.model.Imageurls;
 import com.amandine.model.Keywords;
+import com.amandine.model.Statusupdatelog;
 import com.amandine.model.Targeturls;
 import com.amandine.model.Users;
 import java.io.IOException;
@@ -180,29 +181,31 @@ public class Tweet {
     }
 
     public void tweetMessageToUser(String username, String hashtags, String imageUrl, String targetUrl) {
+        tweetMessageToUser(username, hashtags, imageUrl, targetUrl, null);
+    }
+
+    public void tweetMessageToUser(String username, String hashtags, String imageUrl, String targetUrl, String twitterid) {
         Twitter twitterHandle = this.getTwitter();
         //Instantiate and initialize a new twitter status update
         String message = username + " " + targetUrl + " " + hashtags + " #amandineleforestier";
         StatusUpdate statusUpdate = new StatusUpdate(message);
         try {
             //attach any media, if you want to
-            statusUpdate.setMedia(
-                    //title of media
-                    "Amandine Leforestier Autumn Winter 2015 http://shop.amandineleforestier.fr",
-                    new URL(imageUrl).openStream());
-        } catch (MalformedURLException ex) {
+            statusUpdate.setMedia(//title of media
+                    "Amandine Leforestier Athleasure Sport-Chic Autumn Winter 2015 http://shop.amandineleforestier.fr", new URL(imageUrl).openStream());
+        }catch (MalformedURLException ex) {
             logger.log(Level.SEVERE, "Bad image Url {0}", ex.getMessage());
-        } catch (IOException ex) {
+        }catch (IOException ex) {
             logger.log(Level.SEVERE, "Cannot open Url {0}", ex.getMessage());
         }
         //tweet or update status
         Status status = null;
         try {
             status = twitterHandle.updateStatus(statusUpdate);
-        } catch (TwitterException te) {
+            logTheStatusUpdate(twitterid, message, imageUrl, targetUrl);
+        }catch (TwitterException te) {
             logger.log(Level.SEVERE, "Failed to get timeline: {0}", te.getMessage());
         }
-
         //Status status = twitter.updateStatus(message);
         if (status != null) {
             logger.log(Level.INFO, "Successfully updated the status to [{0}].", status.getText());
@@ -227,7 +230,7 @@ public class Tweet {
                     //System.out.println(id + " " + twitter.showUser(id).getScreenName());
                     //twitter.showUser(id).getDescription language location name
                     //twitter.showUser(id).getScreenName() this is rate limited at 180 every 15 minutes
-                    writeToTable(Long.toString(id), "",FollowersFor);
+                    writeUsersTwitterIdToUserTable(Long.toString(id), "",FollowersFor);
                 }
                     try {
                         Thread.sleep(1000 * 60);
@@ -243,7 +246,7 @@ public class Tweet {
         }
     }
 
-    public void writeToTable(String twitterId, String twitterScreenName, String from) {
+    public void writeUsersTwitterIdToUserTable(String twitterId, String twitterScreenName, String from) {
         EntityManager em = emf.createEntityManager();
         try {
             EntityTransaction entr = em.getTransaction();
@@ -315,5 +318,34 @@ public class Tweet {
             emf.createEntityManager().close();
         }
         return users;
+    }
+
+    public Users[] getRandomUserWithScreenName() {
+        Users[] users = null;
+        int count = 0;
+        try {
+            count = ((Number) emf.createEntityManager().createNamedQuery("Users.rowCountWithScreenName").getSingleResult()).intValue();
+            int randomId = ThreadLocalRandom.current().nextInt(1, count + 1);
+            Query q = emf.createEntityManager().createNamedQuery("Users.findById").setParameter("id", randomId);
+            users = (Users[]) q.getResultList().toArray(new Users[0]);
+        } finally {
+            emf.createEntityManager().close();
+        }
+        return users;
+    }
+
+    public void logTheStatusUpdate(String twitterid, String message, String ImageUrl, String targetUrl) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            EntityTransaction entr = em.getTransaction();
+            entr.begin();
+            Statusupdatelog stat = new Statusupdatelog();
+            stat.setTwitterid(twitterid);
+            stat.setStatusupdate(message + " " + " " + ImageUrl + " " + targetUrl);
+            em.persist(stat);
+            entr.commit();
+        } finally {
+            em.close();
+        }
     }
 }

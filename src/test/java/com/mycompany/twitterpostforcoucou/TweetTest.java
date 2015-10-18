@@ -14,6 +14,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import com.amandine.model.*;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -25,6 +29,7 @@ import org.eclipse.persistence.queries.ScrollableCursor;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.User;
 
 /**
  *
@@ -222,7 +227,7 @@ public class TweetTest {
     @Test
     public void writeToTableTest() {
         Tweet t = new Tweet();
-        t.writeToTable("1", "@screenname", "@fromscreenname");
+        t.writeUsersTwitterIdToUserTable("1", "@screenname", "@fromscreenname");
     }
 
     @Test
@@ -269,7 +274,7 @@ public class TweetTest {
     public void contructATweet() {
         Tweet t = new Tweet();
         System.out.println(
-                t.getRandomUser()[0].getScreenname() + " "
+                t.getRandomUserWithScreenName()[0].getScreenname() + " "
                 + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
                 + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
                 + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
@@ -285,10 +290,10 @@ public class TweetTest {
         try {
             EntityTransaction entr = em.getTransaction();
             entr.begin();
-            Statusupdatelog stat = new Statusupdatelog(0, "11211");
-            stat.getStatusupdatelogPK().getTwitterid();//("11211");
+            Statusupdatelog stat = new Statusupdatelog();
+            stat.getTwitterid();//("11211");
             stat.setStatusupdate("@"
-                    + t.getRandomUser()[0].getScreenname() + " "
+                    + t.getRandomUserWithScreenName()[0].getScreenname() + " "
                     + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
                     + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
                     + t.getRandomKeyword()[0].getKeywordsPK().getKeyword() + " "
@@ -311,13 +316,13 @@ public class TweetTest {
 //        Query q = em.createQuery("UPDATE Subscription s SET s.paid = :paid WHERE s.subscriptionDate < :today");
         //count = ((Number) emf.createEntityManager().createNamedQuery("Keywords.rowCount").getSingleResult()).intValue();
         //em.getTransaction().begin();
-        Query query = em.createQuery("UPDATE Users u SET u.screenname = :screenname WHERE u.usersPK.id = :aid");
+        Query query = emf.createEntityManager().createQuery("UPDATE Users u SET u.screenname = :screenname WHERE u.usersPK.id = :aid");
         query.setParameter("aid", 1);
         query.setParameter("screenname", "@screenname2");
-            EntityTransaction entr = em.getTransaction();
-            entr.begin();
-            int updated = query.executeUpdate();
-            entr.commit();
+        EntityTransaction entr = emf.createEntityManager().getTransaction();
+        entr.begin();
+        int updated = query.executeUpdate();
+        entr.commit();
 
         //em.getTransaction().commit();
 //query.setHint(QueryHints.CURSOR, true).setHint(QueryHints.SCROLLABLE_CURSOR, true);
@@ -327,39 +332,91 @@ public class TweetTest {
 //            System.out.println(((Users)o).getUsersPK());
 //        }
     }
+
     @Test
-    public void updatearowbyIndex(){
+    public void updatearowbyIndex() {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
         EntityManager em = emf.createEntityManager();
-        Users u = em.find(Users.class,new UsersPK(1,"537288506"));
+        Users u = em.find(Users.class, new UsersPK(1, "537288506"));
         em.getTransaction().begin();
         u.setScreenname("@screenname");
         em.getTransaction().commit();
-        
+
     }
+
     @Test
-    public void updateaUserWithItsScreenName(){
+    public void updateaUserWithItsScreenName() {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
         EntityManager em = emf.createEntityManager();
 //        Query q = em.createQuery("UPDATE Subscription s SET s.paid = :paid WHERE s.subscriptionDate < :today");
-        //count = ((Number) emf.createEntityManager().createNamedQuery("Keywords.rowCount").getSingleResult()).intValue();
+        int count = ((Number) emf.createEntityManager().createNamedQuery("Users.rowCount").getSingleResult()).intValue();
         //em.getTransaction().begin();
-        javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Users.findById").setParameter("id", 2);
+        for (int i = 9894; i <= count; i++) {
+            javax.persistence.Query q = emf.createEntityManager().createNamedQuery("Users.findById").setParameter("id", i);
             Users[] usr = (Users[]) q.getResultList().toArray(new Users[0]);
             String twId = usr[0].getUsersPK().getTwitterid();
+
             Twitter twitter = new TwitterFactory().getInstance();
+
             String screenname = null;
-            try{
-                screenname = twitter.showUser(new Long(twId)).getScreenName();
-            }catch(TwitterException tw){
-                
+            String lateststatus = null;
+            int followersCount = 0;
+
+            try {
+                User twitteruser = twitter.showUser(new Long(twId));
+                screenname = twitteruser.getScreenName();
+                followersCount = twitteruser.getFollowersCount();
+                //lateststatus = twitteruser.getStatus().getCreatedAt() + " " + twitteruser.getStatus().getText(); can throw a null exception
+                //System.out.println(Charset.forName("UTF-8").encode(lateststatus).toString());
+
+                Query query = em.createQuery("UPDATE Users u SET u.screenname = :screenname, u.followerscount = :followercount WHERE u.usersPK.id = :aid");
+                query.setParameter("aid", i);
+                query.setParameter("screenname", screenname);
+                query.setParameter("followercount", followersCount);
+                //query.setParameter("lateststatus", lateststatus);
+                EntityTransaction entr = em.getTransaction();
+                entr.begin();
+                int updated = query.executeUpdate();
+                entr.commit();
+            } catch (TwitterException tw) {
+                Logger.getLogger(TweetTest.class.getName()).log(Level.SEVERE, "TwitterException ", tw);
+            } //catch (NumberFormatException | UnsupportedEncodingException e) {
+            //  Logger.getLogger(TweetTest.class.getName()).log(Level.SEVERE, "NumberFormatException | UnsupportedEncodingException", e);
+            //}
+            try {
+                Thread.sleep(1000 * 5);//3 queries
+            } catch (InterruptedException ex) {
+                Logger.getLogger(TweetTest.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
-        Query query = em.createQuery("UPDATE Users u SET u.screenname = :screenname WHERE u.usersPK.id = :aid");
-        query.setParameter("aid", 2);
-        query.setParameter("screenname", screenname);
-            EntityTransaction entr = em.getTransaction();
-            entr.begin();
-            int updated = query.executeUpdate();
-            entr.commit();
+        }
     }
+
+    @Test
+    public void tweetUserWithHashTagsandImagesFromUsersTable() {
+
+        Tweet t = new Tweet();
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("UsersPU");
+        do {
+            Users randomUser = t.getRandomUserWithScreenName()[0];
+            String screenname = "@" + randomUser.getScreenname();
+            String twitterid = randomUser.getUsersPK().getTwitterid();
+            String keyword1 = t.getRandomKeyword()[0].getKeywordsPK().getKeyword();
+            String keyword2 = t.getRandomKeyword()[0].getKeywordsPK().getKeyword();
+            String keyword3 = t.getRandomKeyword()[0].getKeywordsPK().getKeyword();
+            String ImageUrl = t.getRandomImageUrl()[0].getImageurlsPK().getUrl();
+            String targetUrl = t.getRandomTargetUrl()[0].getTargeturlsPK().getUrl();
+            t.tweetMessageToUser(screenname, keyword1 + " " + keyword2 + " " + keyword3, ImageUrl, targetUrl,twitterid);
+                    
+//            t.logTheStatusUpdate(twitterid, screenname, keyword1, keyword2, keyword3, ImageUrl, targetUrl);
+            try {
+                Thread.sleep(1000 * 60);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(TweetTest.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+
+        } while (true);
+    }
+
 }

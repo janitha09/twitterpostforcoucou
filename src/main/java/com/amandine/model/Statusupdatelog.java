@@ -9,8 +9,10 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -27,43 +29,44 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Statusupdatelog.findAll", query = "SELECT s FROM Statusupdatelog s"),
-    @NamedQuery(name = "Statusupdatelog.findById", query = "SELECT s FROM Statusupdatelog s WHERE s.statusupdatelogPK.id = :id"),
+    @NamedQuery(name = "Statusupdatelog.findById", query = "SELECT s FROM Statusupdatelog s WHERE s.id = :id"),
     @NamedQuery(name = "Statusupdatelog.findByTimeposted", query = "SELECT s FROM Statusupdatelog s WHERE s.timeposted = :timeposted"),
-    @NamedQuery(name = "Statusupdatelog.findByTwitterid", query = "SELECT s FROM Statusupdatelog s WHERE s.statusupdatelogPK.twitterid = :twitterid"),
+    @NamedQuery(name = "Statusupdatelog.findByTwitterid", query = "SELECT s FROM Statusupdatelog s WHERE s.twitterid = :twitterid"),
     @NamedQuery(name = "Statusupdatelog.findByStatusupdate", query = "SELECT s FROM Statusupdatelog s WHERE s.statusupdate = :statusupdate")})
 public class Statusupdatelog implements Serializable {
     private static final long serialVersionUID = 1L;
-    @EmbeddedId
-    protected StatusupdatelogPK statusupdatelogPK;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "id")
+    private Integer id;
     @Basic(optional = false)
     @Column(name = "timeposted")
     @Temporal(TemporalType.TIMESTAMP)
     private Date timeposted;
+    @Column(name = "twitterid")
+    private String twitterid;
     @Column(name = "statusupdate")
     private String statusupdate;
 
     public Statusupdatelog() {
     }
 
-    public Statusupdatelog(StatusupdatelogPK statusupdatelogPK) {
-        this.statusupdatelogPK = statusupdatelogPK;
+    public Statusupdatelog(Integer id) {
+        this.id = id;
     }
 
-    public Statusupdatelog(StatusupdatelogPK statusupdatelogPK, Date timeposted) {
-        this.statusupdatelogPK = statusupdatelogPK;
+    public Statusupdatelog(Integer id, Date timeposted) {
+        this.id = id;
         this.timeposted = timeposted;
     }
 
-    public Statusupdatelog(int id, String twitterid) {
-        this.statusupdatelogPK = new StatusupdatelogPK(id, twitterid);
+    public Integer getId() {
+        return id;
     }
 
-    public StatusupdatelogPK getStatusupdatelogPK() {
-        return statusupdatelogPK;
-    }
-
-    public void setStatusupdatelogPK(StatusupdatelogPK statusupdatelogPK) {
-        this.statusupdatelogPK = statusupdatelogPK;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Date getTimeposted() {
@@ -72,6 +75,14 @@ public class Statusupdatelog implements Serializable {
 
     public void setTimeposted(Date timeposted) {
         this.timeposted = timeposted;
+    }
+
+    public String getTwitterid() {
+        return twitterid;
+    }
+
+    public void setTwitterid(String twitterid) {
+        this.twitterid = twitterid;
     }
 
     public String getStatusupdate() {
@@ -85,7 +96,7 @@ public class Statusupdatelog implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (statusupdatelogPK != null ? statusupdatelogPK.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -96,7 +107,7 @@ public class Statusupdatelog implements Serializable {
             return false;
         }
         Statusupdatelog other = (Statusupdatelog) object;
-        if ((this.statusupdatelogPK == null && other.statusupdatelogPK != null) || (this.statusupdatelogPK != null && !this.statusupdatelogPK.equals(other.statusupdatelogPK))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -104,7 +115,7 @@ public class Statusupdatelog implements Serializable {
 
     @Override
     public String toString() {
-        return "com.amandine.model.Statusupdatelog[ statusupdatelogPK=" + statusupdatelogPK + " ]";
+        return "com.amandine.model.Statusupdatelog[ id=" + id + " ]";
     }
     
 }

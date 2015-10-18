@@ -19,16 +19,20 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author 222252
  */
 @Entity
-@Table(name = "users", catalog = "twitterforcoucou", schema = "")
+@Table(name = "users")
 @XmlRootElement
 @NamedQueries({
+    @NamedQuery(name = "Users.rowCountWithScreenName", query = "SELECT COUNT(u) FROM Users u where u.screenname <> \"\""),
     @NamedQuery(name = "Users.rowCount", query = "SELECT COUNT(u) FROM Users u"),
     @NamedQuery(name = "Users.findAll", query = "SELECT u FROM Users u"),
     @NamedQuery(name = "Users.findById", query = "SELECT u FROM Users u WHERE u.usersPK.id = :id"),
     @NamedQuery(name = "Users.findByTwitterid", query = "SELECT u FROM Users u WHERE u.usersPK.twitterid = :twitterid"),
     @NamedQuery(name = "Users.findByScreenname", query = "SELECT u FROM Users u WHERE u.screenname = :screenname"),
-    @NamedQuery(name = "Users.findByFromscreenname", query = "SELECT u FROM Users u WHERE u.fromscreenname = :fromscreenname")})
+    @NamedQuery(name = "Users.findByFromscreenname", query = "SELECT u FROM Users u WHERE u.fromscreenname = :fromscreenname"),
+    @NamedQuery(name = "Users.findByFollowerscount", query = "SELECT u FROM Users u WHERE u.followerscount = :followerscount"),
+    @NamedQuery(name = "Users.findByLateststatus", query = "SELECT u FROM Users u WHERE u.lateststatus = :lateststatus")})
 public class Users implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @EmbeddedId
     protected UsersPK usersPK;
@@ -36,6 +40,10 @@ public class Users implements Serializable {
     private String screenname;
     @Column(name = "fromscreenname")
     private String fromscreenname;
+    @Column(name = "followerscount")
+    private Integer followerscount;
+    @Column(name = "lateststatus")
+    private String lateststatus;
 
     public Users() {
     }
@@ -72,6 +80,22 @@ public class Users implements Serializable {
         this.fromscreenname = fromscreenname;
     }
 
+    public Integer getFollowerscount() {
+        return followerscount;
+    }
+
+    public void setFollowerscount(Integer followerscount) {
+        this.followerscount = followerscount;
+    }
+
+    public String getLateststatus() {
+        return lateststatus;
+    }
+
+    public void setLateststatus(String lateststatus) {
+        this.lateststatus = lateststatus;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -96,5 +120,4 @@ public class Users implements Serializable {
     public String toString() {
         return "com.amandine.model.Users[ usersPK=" + usersPK + " ]";
     }
-    
 }
